@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(recordAdapter);
+        // 设置灰白相间的背景色
+        recyclerView.addItemDecoration(new backgroundcolor(this));
 
         textTotalIncome = findViewById(R.id.textTotalIncome);
         textTotalExpense = findViewById(R.id.textTotalExpense);
