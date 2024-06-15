@@ -7,14 +7,52 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/addButtons"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+
+        <TextView
+            android:id="@+id/textTotalIncome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="总收入: 0"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textTotalExpense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="总支出: 0"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginStart="16dp"/>
+
+        <TextView
+            android:id="@+id/textTotalBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="总计: 0"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginStart="16dp"
+            />
+
+    </LinearLayout>
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_above="@+id/addButtons"
         android:layout_alignParentTop="true"
-        android:layout_marginBottom="16dp"
-        android:padding="8dp" />
+        android:layout_marginBottom="100dp"
+        android:padding="10dp" />
 
     <LinearLayout
         android:id="@+id/addButtons"
