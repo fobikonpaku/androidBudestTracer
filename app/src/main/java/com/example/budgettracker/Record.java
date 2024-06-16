@@ -9,6 +9,7 @@ public class Record {
     private double amount;
     private String description;
     private long date;
+    private int iconResId;
 
     public Record(String type, double amount, String description, long date) {
         this.type = type;
@@ -17,13 +18,20 @@ public class Record {
         this.date = date;
     }
 
-    //用于数据库 加了id
-    public Record(long id, String type, double amount, String description, long date) {
+    public Record(String type, double amount, String description, long date,int iconResId) {
+        this.type = type;
+        this.amount = amount;
+        this.description = description;
+        this.date = date;
+    }
+
+    public Record(long id, String type, double amount, String description, long date,int iconResId) {
         this.id = id;
         this.type = type;
         this.amount = amount;
         this.description = description;
         this.date = date;
+        this.iconResId = iconResId;
     }
 
     public long getId() {
@@ -65,5 +73,13 @@ public class Record {
 
     public void setDate(long date) {
         this.date = date;
+    }
+
+    public int getIconResId() {
+        return iconResId;
+    }
+
+    public void setIconResId(int iconResId) {
+        this.iconResId = iconResId;
     }
 }

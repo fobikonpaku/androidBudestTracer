@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordViewHolder>{
     private List<Record> recordList;
-
+    private MainActivity mainActivity;
     @NonNull
     @Override
     public RecordViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -25,6 +26,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
     @Override
     public void onBindViewHolder(@NonNull RecordViewHolder holder, int position) {
         Record record = recordList.get(position);
+        //单击的操作
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,6 +49,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         removeItem(adapterPosition);
+                        //mainActivity.deleteRecordFromPreferences(record.getId());
                     }
                 });
                 dialogBuilder.setNegativeButton("取消", null);
@@ -54,6 +57,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
                 dialog.show();
             }
         });
+        holder.iconImageView.setImageResource(record.getIconResId());
         holder.typeTextView.setText(record.getType());
         holder.amountTextView.setText(String.valueOf(record.getAmount()));
         holder.descriptionTextView.setText(record.getDescription());
@@ -70,15 +74,18 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
     public void removeItem(int position) {
         recordList.remove(position);
         notifyItemRemoved(position);
+
     }
 
     static class RecordViewHolder extends RecyclerView.ViewHolder{
+        public ImageView iconImageView;
         public TextView typeTextView;
         public TextView amountTextView;
         public TextView descriptionTextView;
         public TextView dateTextView;
         public RecordViewHolder(View v) {
             super(v);
+            iconImageView = v.findViewById(R.id.iconImageView);
             typeTextView = v.findViewById(R.id.typeTextView);
             amountTextView = v.findViewById(R.id.amountTextView);
             descriptionTextView = v.findViewById(R.id.descriptionTextView);

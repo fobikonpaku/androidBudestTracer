@@ -5,17 +5,51 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <GridLayout
+        android:id="@+id/iconGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="4"
+        android:paddingTop="16dp">
+
+        <ImageView
+            android:id="@+id/icon_food"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:padding="8dp"
+            android:src="@drawable/ic_food"
+            android:tag="@drawable/ic_food" />
+
+        <ImageView
+            android:id="@+id/icon_shopping"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:src="@drawable/ic_shopping"
+            android:tag="@drawable/ic_shopping" />
+
+        <ImageView
+            android:id="@+id/icon_fruit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:src="@drawable/ic_fruit"
+            android:tag="@drawable/ic_fruit" />
+    </GridLayout>
+
     <EditText
         android:id="@+id/editTextAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Amount"
+        android:hint="金额"
         android:inputType="numberDecimal" />
 
     <EditText
         android:id="@+id/editTextDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Description" />
+        android:hint="说明" />
 
 </LinearLayout>

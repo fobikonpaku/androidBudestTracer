@@ -2,11 +2,11 @@ package com.example.budgettracker;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,12 +16,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.googlecode.tesseract.android.TessBaseAPI;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.SharedPreferences;
 import com.google.gson.Gson;
@@ -33,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Record> recordList;
     private RecordAdapter recordAdapter;
     private TextView textTotalIncome, textTotalExpense, textTotalBalance;
+    private int selectedIconResId = R.drawable.ic_default;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,19 +41,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-//        // 初始化FileManager
-//        FileManager fileManager = new FileManager(this);
-//        String filePath = fileManager.getFilePathAfterCopy(R.raw.chi_sim, "chi_sim.traineddata", "tessdata", true);
-//        String tessDataPath = filePath.substring(0, filePath.length() - "chi_sim.traineddata".length());
-//
-//        // 初始化Tesseract
-//        TessBaseAPI tessBaseAPI = new TessBaseAPI();
-//        if (!tessBaseAPI.init(tessDataPath, "chi_sim")) {
-//            Log.e("MainActivity", "Could not initialize Tesseract.");
-//            tessBaseAPI.recycle();
-//        }
-
-//        recordList = new ArrayList<>();
+        recordList = new ArrayList<>();
         recordList = loadRecordsFromPreferences();
         recordAdapter = new RecordAdapter(recordList);
 
@@ -98,6 +86,21 @@ public class MainActivity extends AppCompatActivity {
 
         EditText editTextAmount = dialogView.findViewById(R.id.editTextAmount);
         EditText editTextDescription = dialogView.findViewById(R.id.editTextDescription);
+        GridLayout iconGrid = dialogView.findViewById(R.id.iconGrid);
+
+        selectedIconResId = R.drawable.ic_default;
+
+        @SuppressLint("ResourceType") View.OnClickListener iconClickListener = v -> {
+            for (int i = 0; i < iconGrid.getChildCount(); i++) {
+                iconGrid.getChildAt(i).setBackground(null);
+            }
+            v.setBackgroundResource(R.drawable.icon_selected_background);
+            selectedIconResId = v.getId();
+        };
+
+        for (int i = 0; i < iconGrid.getChildCount(); i++) {
+            iconGrid.getChildAt(i).setOnClickListener(iconClickListener);
+        }
 
         dialogBuilder.setTitle("添加记录");
         dialogBuilder.setPositiveButton("添加", (dialog, which) -> {
@@ -108,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 double amount = Double.parseDouble(amountStr);
                 // 假设使用当前时间作为记录的时间戳
                 long timestamp = System.currentTimeMillis();
-                Record newRecord = new Record(type, amount, description, timestamp);
+                Record newRecord = new Record(type, amount, description, timestamp, selectedIconResId);
                 recordList.add(newRecord);
                 //根据type类型修改收入支出
                 updateTotalValues();
