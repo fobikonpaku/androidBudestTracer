@@ -2,6 +2,7 @@ package com.example.budgettracker;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +20,18 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    long pid = 1;
     private List<Record> recordList;
+    static final Type RECORD_LIST_TYPE = new TypeToken<List<java.lang.Record>>(){}.getType();
     private RecordAdapter recordAdapter;
     private TextView textTotalIncome, textTotalExpense, textTotalBalance;
+    private RecordDataSource dataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +39,12 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        recordList = new ArrayList<>();
+        dataSource = new RecordDataSource(this);
+        dataSource.open();
+
+        //获取数据库里的数据
+        recordList = dataSource.getAllRecords();
+
         recordAdapter = new RecordAdapter(recordList);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -42,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(recordAdapter);
         // 设置灰白相间的背景色
         recyclerView.addItemDecoration(new backgroundcolor(this));
+
+        //初始化金额 (这里出问题了)
+        updateTotalValues();
 
         textTotalIncome = findViewById(R.id.textTotalIncome);
         textTotalExpense = findViewById(R.id.textTotalExpense);
@@ -84,20 +97,24 @@ public class MainActivity extends AppCompatActivity {
 
             if (!amountStr.isEmpty()) {
                 double amount = Double.parseDouble(amountStr);
-                // 假设使用当前时间作为记录的时间戳
+                // 假设使用当前时间作为记录的时间
                 long timestamp = System.currentTimeMillis();
-                Record newRecord = new Record(type, amount, description, timestamp);
+                pid++;
+                Record newRecord = new Record(pid, type, amount, description, timestamp);
                 recordList.add(newRecord);
+                //修改数据库
+                dataSource.addRecord(newRecord);
+
                 //根据type类型修改收入支出
                 updateTotalValues();
                 // 完成输入后添加记录并刷新列表
                 recordAdapter.notifyDataSetChanged();
+                saveRecordsToPreferences();
             } else {
                 Toast.makeText(MainActivity.this, "金额不能为0", Toast.LENGTH_SHORT).show();
             }
         });
         dialogBuilder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
-
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
         //recordList.add(new Record(type, 100.0, "Sample Description", System.currentTimeMillis()));
@@ -107,7 +124,8 @@ public class MainActivity extends AppCompatActivity {
     private void updateTotalValues() {
         double totalIncome = 0.0;
         double totalExpense = 0.0;
-
+        //不加这句会闪退
+        if(recordList.isEmpty()) return;
         for (Record record : recordList) {
             if (record.getType().equals("Income")) {
                 totalIncome += record.getAmount();
@@ -122,5 +140,31 @@ public class MainActivity extends AppCompatActivity {
 
         double balance = totalIncome - totalExpense;
         textTotalBalance.setText(String.format(Locale.getDefault(), "总计: $%.2f", balance));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // 关闭数据库
+        dataSource.close();
+    }
+
+    private List<java.lang.Record> loadRecordsFromPreferences() {
+        // 获取名为 "transaction_data" 的 SharedPreferences 对象，使用私有模式
+        SharedPreferences prefs = getSharedPreferences("transaction_data", MODE_PRIVATE);
+        String json = prefs.getString("records", null);
+        if (json == null) {
+            return new ArrayList<>();
+        } else {
+            return new Gson().fromJson(json, RECORD_LIST_TYPE);
+        }
+    }
+
+    private void saveRecordsToPreferences() {
+        SharedPreferences prefs = getSharedPreferences("transaction_data", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        String json = new Gson().toJson(recordList);
+        editor.putString("records", json);
+        editor.apply();
     }
 }

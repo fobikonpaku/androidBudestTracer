@@ -4,6 +4,7 @@ import lombok.Data;
 //lombok实现getter和setter
 //@Data
 public class Record {
+    private long id;
     private String type;
     private double amount;
     private String description;
@@ -14,6 +15,23 @@ public class Record {
         this.amount = amount;
         this.description = description;
         this.date = date;
+    }
+
+    //用于数据库 加了id
+    public Record(long id, String type, double amount, String description, long date) {
+        this.id = id;
+        this.type = type;
+        this.amount = amount;
+        this.description = description;
+        this.date = date;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getType() {

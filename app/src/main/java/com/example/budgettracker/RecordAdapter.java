@@ -28,7 +28,6 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 可选：实现点击列表项的操作，例如查看详细信息
             }
         });
 
@@ -42,15 +41,15 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
 
             private void showDeleteDialog(int adapterPosition) {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(holder.itemView.getContext());
-                dialogBuilder.setTitle("Delete Record");
-                dialogBuilder.setMessage("Are you sure you want to delete this record?");
-                dialogBuilder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                dialogBuilder.setTitle("删除");
+                dialogBuilder.setMessage("删除后不可恢复，是否要删除?");
+                dialogBuilder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         removeItem(adapterPosition);
                     }
                 });
-                dialogBuilder.setNegativeButton("Cancel", null);
+                dialogBuilder.setNegativeButton("取消", null);
                 AlertDialog dialog = dialogBuilder.create();
                 dialog.show();
             }
@@ -58,7 +57,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
         holder.typeTextView.setText(record.getType());
         holder.amountTextView.setText(String.valueOf(record.getAmount()));
         holder.descriptionTextView.setText(record.getDescription());
-        holder.dateTextView.setText(new java.text.SimpleDateFormat("MM/dd/yyyy").format(new java.util.Date(record.getDate())));
+        holder.dateTextView.setText(new java.text.SimpleDateFormat("yyyy/MM/dd").format(new java.util.Date(record.getDate())));
     }
 
 

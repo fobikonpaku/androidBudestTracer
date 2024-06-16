@@ -22,8 +22,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/addButtons"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:gravity="left"
+        android:orientation="vertical">
 
 
         <TextView
@@ -32,7 +32,8 @@
             android:layout_height="wrap_content"
             android:text="总收入: 0"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginStart="16dp"/>
 
         <TextView
             android:id="@+id/textTotalExpense"
@@ -67,13 +68,13 @@
             android:id="@+id/btnAddIncome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add Income" />
+            android:text="添加收入" />
 
         <Button
             android:id="@+id/btnAddExpense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Add Expense"/>
+            android:text="添加支出"/>
     </LinearLayout>
 </RelativeLayout>
