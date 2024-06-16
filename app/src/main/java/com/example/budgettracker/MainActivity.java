@@ -1,9 +1,8 @@
 package com.example.budgettracker;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -14,37 +13,48 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.SharedPreferences;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 public class MainActivity extends AppCompatActivity {
-    long pid = 1;
+    // 添加记录列表类型
+    static final Type RECORD_LIST_TYPE = new TypeToken<List<Record>>(){}.getType();
     private List<Record> recordList;
-    static final Type RECORD_LIST_TYPE = new TypeToken<List<java.lang.Record>>(){}.getType();
     private RecordAdapter recordAdapter;
     private TextView textTotalIncome, textTotalExpense, textTotalBalance;
-    private RecordDataSource dataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        dataSource = new RecordDataSource(this);
-        dataSource.open();
+//        // 初始化FileManager
+//        FileManager fileManager = new FileManager(this);
+//        String filePath = fileManager.getFilePathAfterCopy(R.raw.chi_sim, "chi_sim.traineddata", "tessdata", true);
+//        String tessDataPath = filePath.substring(0, filePath.length() - "chi_sim.traineddata".length());
+//
+//        // 初始化Tesseract
+//        TessBaseAPI tessBaseAPI = new TessBaseAPI();
+//        if (!tessBaseAPI.init(tessDataPath, "chi_sim")) {
+//            Log.e("MainActivity", "Could not initialize Tesseract.");
+//            tessBaseAPI.recycle();
+//        }
 
-        //获取数据库里的数据
-        recordList = dataSource.getAllRecords();
-
+//        recordList = new ArrayList<>();
+        recordList = loadRecordsFromPreferences();
         recordAdapter = new RecordAdapter(recordList);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -53,15 +63,14 @@ public class MainActivity extends AppCompatActivity {
         // 设置灰白相间的背景色
         recyclerView.addItemDecoration(new backgroundcolor(this));
 
-        //初始化金额 (这里出问题了)
-        updateTotalValues();
-
         textTotalIncome = findViewById(R.id.textTotalIncome);
         textTotalExpense = findViewById(R.id.textTotalExpense);
         textTotalBalance = findViewById(R.id.textTotalBalance);
 
         Button btnAddIncome = findViewById(R.id.btnAddIncome);
         Button btnAddExpense = findViewById(R.id.btnAddExpense);
+
+        updateTotalValues();
 
         btnAddIncome.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,35 +106,32 @@ public class MainActivity extends AppCompatActivity {
 
             if (!amountStr.isEmpty()) {
                 double amount = Double.parseDouble(amountStr);
-                // 假设使用当前时间作为记录的时间
+                // 假设使用当前时间作为记录的时间戳
                 long timestamp = System.currentTimeMillis();
-                pid++;
-                Record newRecord = new Record(pid, type, amount, description, timestamp);
+                Record newRecord = new Record(type, amount, description, timestamp);
                 recordList.add(newRecord);
-                //修改数据库
-                dataSource.addRecord(newRecord);
-
                 //根据type类型修改收入支出
                 updateTotalValues();
                 // 完成输入后添加记录并刷新列表
                 recordAdapter.notifyDataSetChanged();
+                //保存到本地
                 saveRecordsToPreferences();
             } else {
                 Toast.makeText(MainActivity.this, "金额不能为0", Toast.LENGTH_SHORT).show();
             }
         });
         dialogBuilder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
+
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
-        //recordList.add(new Record(type, 100.0, "Sample Description", System.currentTimeMillis()));
+        // recordList.add(new Record(type, 100.0, "Sample Description", System.currentTimeMillis()));
         // recordAdapter.notifyDataSetChanged();
     }
 
     private void updateTotalValues() {
         double totalIncome = 0.0;
         double totalExpense = 0.0;
-        //不加这句会闪退
-        if(recordList.isEmpty()) return;
+
         for (Record record : recordList) {
             if (record.getType().equals("Income")) {
                 totalIncome += record.getAmount();
@@ -142,14 +148,8 @@ public class MainActivity extends AppCompatActivity {
         textTotalBalance.setText(String.format(Locale.getDefault(), "总计: $%.2f", balance));
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // 关闭数据库
-        dataSource.close();
-    }
 
-    private List<java.lang.Record> loadRecordsFromPreferences() {
+    private List<Record> loadRecordsFromPreferences() {
         // 获取名为 "transaction_data" 的 SharedPreferences 对象，使用私有模式
         SharedPreferences prefs = getSharedPreferences("transaction_data", MODE_PRIVATE);
         String json = prefs.getString("records", null);

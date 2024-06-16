@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.androidApplication)
+    id("com.android.application")
 }
 
 android {
@@ -40,7 +40,7 @@ dependencies {
     implementation("org.jetbrains:annotations:15.0")
     implementation("org.jetbrains:annotations:15.0")
 //    implementation(libs.recyclerview)
-    implementation(libs.gson)
+    implementation("com.google.code.gson:gson:2.8.5")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
