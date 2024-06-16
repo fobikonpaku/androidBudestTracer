@@ -4,10 +4,11 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="15dp">
+
     <ImageView
         android:id="@+id/iconImageView"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:src="@drawable/ic_default" />
 
@@ -22,19 +23,21 @@
             android:id="@+id/typeTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="20dp"
             android:text="Type" />
+        <TextView
+            android:id="@+id/amountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:text="Amount" />
 
         <TextView
             android:id="@+id/descriptionTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="20dp"
             android:text="Description" />
-
-        <TextView
-            android:id="@+id/amountTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Amount" />
     </LinearLayout>
 
     <TextView

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,15 +89,31 @@ public class MainActivity extends AppCompatActivity {
         EditText editTextDescription = dialogView.findViewById(R.id.editTextDescription);
         GridLayout iconGrid = dialogView.findViewById(R.id.iconGrid);
 
-        selectedIconResId = R.drawable.ic_default;
+        final int[] selectedIconResId = {0}; // 使用数组来存储选中的图片资源ID
+
 
         @SuppressLint("ResourceType") View.OnClickListener iconClickListener = v -> {
             for (int i = 0; i < iconGrid.getChildCount(); i++) {
                 iconGrid.getChildAt(i).setBackground(null);
             }
             v.setBackgroundResource(R.drawable.icon_selected_background);
-            selectedIconResId = v.getId();
+            selectedIconResId[0] = (int) v.getTag();
         };
+
+        int[] iconResIds = {
+               // R.drawable.ic_default,
+                R.drawable.ic_food,
+                R.drawable.ic_fruit,
+                R.drawable.ic_shopping
+        };
+
+        for (int iconResId : iconResIds) {
+            ImageView iconView = new ImageView(this);
+            iconView.setImageResource(iconResId);
+            iconView.setTag(iconResId); // 将图片资源ID设置为标记
+            iconView.setOnClickListener(iconClickListener);
+            iconGrid.addView(iconView);
+        }
 
         for (int i = 0; i < iconGrid.getChildCount(); i++) {
             iconGrid.getChildAt(i).setOnClickListener(iconClickListener);
@@ -106,12 +123,12 @@ public class MainActivity extends AppCompatActivity {
         dialogBuilder.setPositiveButton("添加", (dialog, which) -> {
             String amountStr = editTextAmount.getText().toString();
             String description = editTextDescription.getText().toString();
-
+            int pid =  recordAdapter.getItemCount()+1;
             if (!amountStr.isEmpty()) {
                 double amount = Double.parseDouble(amountStr);
                 // 假设使用当前时间作为记录的时间戳
                 long timestamp = System.currentTimeMillis();
-                Record newRecord = new Record(type, amount, description, timestamp, selectedIconResId);
+                Record newRecord = new Record(pid,type, amount, description, timestamp, selectedIconResId[0]);
                 recordList.add(newRecord);
                 //根据type类型修改收入支出
                 updateTotalValues();

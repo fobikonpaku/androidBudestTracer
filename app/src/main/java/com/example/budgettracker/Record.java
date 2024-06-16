@@ -18,13 +18,6 @@ public class Record {
         this.date = date;
     }
 
-    public Record(String type, double amount, String description, long date,int iconResId) {
-        this.type = type;
-        this.amount = amount;
-        this.description = description;
-        this.date = date;
-    }
-
     public Record(long id, String type, double amount, String description, long date,int iconResId) {
         this.id = id;
         this.type = type;
