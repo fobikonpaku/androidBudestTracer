@@ -7,24 +7,25 @@
 
     <ImageView
         android:id="@+id/iconImageView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:contentDescription="Record Icon" />
+        android:contentDescription="Record Icon"
+        />
 
     <TextView
         android:id="@+id/typeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Type"
-        android:textSize="18sp"
-        android:layout_marginTop="16dp" />
+        android:textSize="35sp" />
 
     <TextView
         android:id="@+id/amountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Amount"
-        android:textSize="18sp"
+        android:textSize="35sp"
         android:layout_marginTop="16dp" />
 
     <TextView
@@ -32,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Description"
-        android:textSize="18sp"
+        android:textSize="35sp"
         android:layout_marginTop="16dp" />
 
     <TextView
@@ -40,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Date"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:layout_marginTop="16dp" />
 
 <!--    <ImageView-->

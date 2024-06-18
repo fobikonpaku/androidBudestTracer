@@ -79,9 +79,12 @@ public class RecordDetailActivity extends AppCompatActivity {
 
         // 设置数据到视图
         iconImageView.setImageResource(iconResId);
-        typeTextView.setText(type);
-        amountTextView.setText(String.format(Locale.getDefault(), "$%.2f", amount));
-        descriptionTextView.setText(description);
+        String typetoCh = null;
+        if(type.equals("Expense")) typetoCh = "支出";
+        else if(type.equals("Income")) typetoCh = "收入";
+        typeTextView.setText("类型: " + typetoCh);
+        amountTextView.setText(String.format(Locale.getDefault(), "金额：￥%.2f", amount));
+        descriptionTextView.setText("备注：" + description);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         dateTextView.setText(sdf.format(new Date(date)));
 

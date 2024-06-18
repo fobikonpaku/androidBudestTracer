@@ -31,7 +31,10 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
     public void onBindViewHolder(@NonNull RecordViewHolder holder, int position) {
         Record record = recordList.get(position);
         holder.iconImageView.setImageResource(record.getIconResId());
-        holder.typeTextView.setText(record.getType());
+        String typetoCh = null;
+        if(record.getType().equals("Expense")) typetoCh = "支出";
+        else if(record.getType().equals("Income")) typetoCh = "收入";
+        holder.typeTextView.setText(typetoCh);
         holder.amountTextView.setText(String.valueOf(record.getAmount()));
         holder.descriptionTextView.setText(record.getDescription());
         holder.dateTextView.setText(new java.text.SimpleDateFormat("yyyy/MM/dd").format(new java.util.Date(record.getDate())));
