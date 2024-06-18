@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         recordList = new ArrayList<>();
         recordList = loadRecordsFromPreferences();
-        recordAdapter = new RecordAdapter(recordList);
+        recordAdapter = new RecordAdapter(recordList,this);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

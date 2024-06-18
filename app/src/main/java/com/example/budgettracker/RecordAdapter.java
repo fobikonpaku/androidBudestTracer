@@ -1,6 +1,8 @@
 package com.example.budgettracker;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +14,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Locale;
 
 public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordViewHolder>{
     private List<Record> recordList;
+    private Context context;
     private MainActivity mainActivity;
     @NonNull
     @Override
@@ -26,11 +30,21 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
     @Override
     public void onBindViewHolder(@NonNull RecordViewHolder holder, int position) {
         Record record = recordList.get(position);
+        holder.iconImageView.setImageResource(record.getIconResId());
+        holder.typeTextView.setText(record.getType());
+        holder.amountTextView.setText(String.valueOf(record.getAmount()));
+        holder.descriptionTextView.setText(record.getDescription());
+        holder.dateTextView.setText(new java.text.SimpleDateFormat("yyyy/MM/dd").format(new java.util.Date(record.getDate())));
         //单击的操作
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, RecordDetailActivity.class);
+            intent.putExtra("id", record.getId());
+            intent.putExtra("iconResId", record.getIconResId());
+            intent.putExtra("type", record.getType());
+            intent.putExtra("amount", record.getAmount());
+            intent.putExtra("description", record.getDescription());
+            intent.putExtra("date", record.getDate());
+            context.startActivity(intent);
         });
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -57,11 +71,6 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
                 dialog.show();
             }
         });
-        holder.iconImageView.setImageResource(record.getIconResId());
-        holder.typeTextView.setText(record.getType());
-        holder.amountTextView.setText(String.valueOf(record.getAmount()));
-        holder.descriptionTextView.setText(record.getDescription());
-        holder.dateTextView.setText(new java.text.SimpleDateFormat("yyyy/MM/dd").format(new java.util.Date(record.getDate())));
     }
 
 
@@ -96,6 +105,10 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
         this.recordList = recordList;
     }
 
+    public RecordAdapter(List<Record> recordList, Context context) {
+        this.recordList = recordList;
+        this.context = context;
+    }
 
 
 
