@@ -21,10 +21,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,59 +55,18 @@ public class MainActivity extends AppCompatActivity {
     private List<Record> recordList;
     private RecordAdapter recordAdapter;
     private TextView textTotalIncome, textTotalExpense, textTotalBalance;
-    private int selectedIconResId = R.drawable.ic_default;
+    private ActivityResultLauncher<Intent> fragmentResultLauncher;
+    private RelativeLayout mainLayout;
+    private Button btnSwitchMode;
+    private boolean isNightMode = false; // 标识当前模式
 
-    //捕捉屏幕
-    private static final int REQUEST_CODE_MEDIA_PROJECTION = 1;
-    private MediaProjectionManager projectionManager;
-    private MediaProjection mediaProjection;
-    private VirtualDisplay virtualDisplay;
-    private SurfaceView surfaceView;
-    private int density;
-    private int width;
-    private int height;
-
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
-        // 提取资产文件
-        Assets.extractAssets(this);
-
-        // 确保 tessdata 目录存在
-        File tessdataDir = new File(getFilesDir() + "/tessdata/");
-        if (!tessdataDir.exists()) {
-            tessdataDir.mkdirs();
-        }
-
-        // 复制 chi_sim.traineddata 文件到 tessdata 目录
-        copyTrainedData("chi_sim.traineddata");
-
-        // 检查辅助功能服务是否启用
-        if (!isAccessibilityServiceEnabled(this, MyAccessibilityService.class)) {
-            // 提示用户启用辅助功能服务
-            Toast.makeText(this, "请启用辅助功能服务", Toast.LENGTH_LONG).show();
-            //启动 Android 系统的辅助功能设置页面
-            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-        }else{
-
-        }
-
-        //请求媒体权限
-        projectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-        //创建并启动屏幕捕获投影的 Intent
-        Intent intent = projectionManager.createScreenCaptureIntent();
-        startActivityForResult(intent, REQUEST_CODE_MEDIA_PROJECTION);
-
-        //获取屏幕密度和尺寸
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        density = metrics.densityDpi;
-        width = metrics.widthPixels;
-        height = metrics.heightPixels;
 
         recordList = new ArrayList<>();
         recordList = loadRecordsFromPreferences();
@@ -122,9 +84,11 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnAddIncome = findViewById(R.id.btnAddIncome);
         Button btnAddExpense = findViewById(R.id.btnAddExpense);
+        Button autoAdd = findViewById(R.id.btnAutoHandleAdd);
 
         updateTotalValues();
 
+        //手动添加监听
         btnAddIncome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,12 +99,41 @@ public class MainActivity extends AppCompatActivity {
         btnAddExpense.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 显示对话框以添加支出记录
                 showAddRecordDialog("Expense");
             }
         });
+        autoAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMainFragment();
+            }
+        });
+        fragmentResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        List<Record> records = (List<Record>) result.getData().getSerializableExtra("records");
+                        if (records != null) {
+
+                            Toast.makeText(getApplicationContext(), "导入中...", Toast.LENGTH_SHORT).show();
+                            recordList.addAll(records);
+                            saveRecordsToPreferences();
+                            updateTotalValues();
+                            recordAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    recordAdapter.notifyDataSetChanged();
+                }
+        );
+
     }
 
+    private void startMainFragment() {
+        Intent intent = new Intent(MainActivity.this, MainFragment.class);
+        fragmentResultLauncher.launch(intent);
+    }
+
+    //手动添加逻辑
     @SuppressLint("NotifyDataSetChanged")
     private void showAddRecordDialog(final String type) {
         // 创建并显示对话框以输入记录详细信息
@@ -165,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         int[] iconResIds = {
-               // R.drawable.ic_default,
+                //R.drawable.ic_default,
                 R.drawable.ic_food,
                 R.drawable.ic_fruit,
                 R.drawable.ic_shopping
@@ -187,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         dialogBuilder.setPositiveButton("添加", (dialog, which) -> {
             String amountStr = editTextAmount.getText().toString();
             String description = editTextDescription.getText().toString();
-            int pid =  recordAdapter.getItemCount()+1;
+            int pid = recordAdapter.getItemCount()+1;
             if (!amountStr.isEmpty()) {
                 double amount = Double.parseDouble(amountStr);
                 // 假设使用当前时间作为记录的时间戳
@@ -208,10 +201,12 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
+
         // recordList.add(new Record(type, 100.0, "Sample Description", System.currentTimeMillis()));
         // recordAdapter.notifyDataSetChanged();
     }
 
+    //更新收支收入
     private void updateTotalValues() {
         double totalIncome = 0.0;
         double totalExpense = 0.0;
@@ -232,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         textTotalBalance.setText(String.format(Locale.getDefault(), "总计: ￥%.2f", balance));
     }
 
-
+    //数据持久化读取
     private List<Record> loadRecordsFromPreferences() {
         // 获取名为 "transaction_data" 的 SharedPreferences 对象，使用私有模式
         SharedPreferences prefs = getSharedPreferences("transaction_data", MODE_PRIVATE);
@@ -244,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //数据持久化储存
     private void saveRecordsToPreferences() {
         SharedPreferences prefs = getSharedPreferences("transaction_data", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -252,88 +248,5 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    private boolean isAccessibilityServiceEnabled(Context context, Class<?> accessibilityServiceClass) {
-        // 创建期望的 ComponentName
-        ComponentName expectedComponentName = new ComponentName(context, accessibilityServiceClass);
 
-        // 获取已启用的辅助功能服务设置
-        String enabledServicesSetting = Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-
-        // 如果设置为空，返回 false
-        if (enabledServicesSetting == null) {
-            return false;
-        }
-
-        // 使用 SimpleStringSplitter 分割启用的服务列表
-        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-        colonSplitter.setString(enabledServicesSetting);
-
-        // 遍历启用的服务列表，检查期望的服务是否在列表中
-        while (colonSplitter.hasNext()) {
-            String componentNameString = colonSplitter.next();
-            ComponentName enabledService = ComponentName.unflattenFromString(componentNameString);
-
-            if (enabledService != null && enabledService.equals(expectedComponentName)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //在 startActivityForResult 调用返回结果时被调用
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (requestCode == REQUEST_CODE_MEDIA_PROJECTION && resultCode == Activity.RESULT_OK) {
-                // 将 MediaProjection 数据传递给 MyAccessibilityService
-                Intent serviceIntent = new Intent(this, MyAccessibilityService.class);
-                serviceIntent.putExtra("resultCode", resultCode);
-                serviceIntent.putExtra("data", data);
-                //启动MyAccessibilityService，并将 Intent 传递给它
-                startForegroundService(serviceIntent);
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-
-//    private void setupVirtualDisplay() {
-//        Surface surface = surfaceView.getHolder().getSurface();
-//        virtualDisplay = mediaProjection.createVirtualDisplay(
-//                "ScreenCapture",
-//                width,
-//                height,
-//                density,
-//                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-//                surface,
-//                null,
-//                null
-//        );
-//    }
-
-    private void copyTrainedData(String fileName) {
-        try {
-            InputStream in = getAssets().open("tessdata/" + fileName);
-            File outFile = new File(getFilesDir() + "/tessdata/", fileName);
-            if (!outFile.exists()) {
-                OutputStream out = new FileOutputStream(outFile);
-                byte[] buffer = new byte[1024];
-                int read;
-                while ((read = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, read);
-                }
-                in.close();
-                out.close();
-                Log.d("MainActivity", fileName + " copied to " + outFile.getPath());
-            } else {
-                Log.d("MainActivity", fileName + " already exists at " + outFile.getPath());
-            }
-        } catch (IOException e) {
-            Log.e("MainActivity", "Failed to copy " + fileName + " to tessdata directory", e);
-        }
-    }
 }

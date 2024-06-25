@@ -46,7 +46,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("org.projectlombok:lombok:1.18.24")
-
-
-    implementation ("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
+    implementation("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
+    //implementation("opencv")
 }

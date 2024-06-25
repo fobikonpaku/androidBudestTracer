@@ -1,9 +1,11 @@
 package com.example.budgettracker;
+import java.io.Serializable;
+
 import lombok.Data;
 
 //lombok实现getter和setter
 //@Data
-public class Record {
+public class Record implements Serializable {
     private long id;
     private String type;
     private double amount;

@@ -53,9 +53,7 @@
             android:textStyle="bold"
             android:layout_marginStart="16dp"
             />
-
     </LinearLayout>
-
     <LinearLayout
         android:id="@+id/addButtons"
         android:layout_width="match_parent"
@@ -75,7 +73,15 @@
             android:id="@+id/btnAddExpense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
+            android:layout_marginStart="30dp"
             android:text="添加支出"/>
+
+        <Button
+            android:id="@+id/btnAutoHandleAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:text="自动识别"/>
     </LinearLayout>
+
 </RelativeLayout>
